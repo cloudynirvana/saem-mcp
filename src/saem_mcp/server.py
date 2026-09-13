@@ -1,7 +1,10 @@
 """MCP Server for SAEM Cancer PoC — Bioinformatics Simulation Engine.
 
-Wraps the SAEM Universal Cure Framework as MCP tools, enabling AI-driven
-cancer simulation from any MCP client (Antigravity, Claude Code, etc.).
+Wraps the SAEM cancer-simulation framework as MCP tools, enabling AI-driven
+in-silico cancer modeling from any MCP client (Antigravity, Claude Code, etc.).
+
+Research simulation only: not a medical device, not CDS, not clinical
+validation, and not dosing advice. See DISCLAIMER.md.
 """
 
 import asyncio
@@ -118,29 +121,31 @@ def handle_run_simulation(cancer_type: str) -> str:
     lines = [
         f"# 🧬 SAEM Simulation: {cancer_type}",
         "",
-        f"## Seriousness Score: {result['seriousness']:.3f}",
+        "_In-silico run for the named cancer generator. Scores are model outputs, not clinical results._",
         "",
-        "## Drug Protocol",
+        f"## Model seriousness score: {result['seriousness']:.3f}",
+        "",
+        "## Simulated intervention schedule",
     ]
     for i, drug in enumerate(result.get("drugs", []), 1):
         lines.append(f"  {i}. {drug}")
 
     lines.extend([
         "",
-        "## Phase Timing",
+        "## Simulated phase timing (model days)",
         f"  - Flatten: {result.get('phase_days', {}).get('flatten', '?')} days",
         f"  - Heat: {result.get('phase_days', {}).get('heat', '?')} days",
         f"  - Push: {result.get('phase_days', {}).get('push', '?')} days",
         "",
-        "## Cure Metrics",
+        "## In-silico metrics",
         f"  - Escape Distance: {result.get('escape_distance', 0):.4f}",
-        f"  - Cure Rate: {result.get('cure_rate', 0)*100:.1f}%",
-        f"  - 95% CI: [{result.get('cure_rate_ci_low', 0)*100:.1f}%, {result.get('cure_rate_ci_high', 0)*100:.1f}%]",
+        f"  - Basin-escape rate (engine field: cure_rate): {result.get('cure_rate', 0)*100:.1f}%",
+        f"  - 95% CI (simulator): [{result.get('cure_rate_ci_low', 0)*100:.1f}%, {result.get('cure_rate_ci_high', 0)*100:.1f}%]",
         "",
-        "## Resistance Analysis",
+        "## Modeled resistance comparison",
         f"  - Adaptive (phased) escape: {result.get('adaptive_escape', 'N/A')}",
         f"  - Continuous escape: {result.get('continuous_escape', 'N/A')}",
-        f"  - Adaptive superior: {'✅ Yes' if result.get('adaptive_superior', False) else '❌ No'}",
+        f"  - Adaptive lower escape in this run: {'✅ Yes' if result.get('adaptive_superior', False) else '❌ No'}",
     ])
 
     return "\n".join(lines)
@@ -159,8 +164,10 @@ def handle_run_all() -> str:
     lines = [
         "# 🧬 SAEM Pan-Cancer Simulation Results",
         "",
-        "| Cancer | Seriousness | Cure Rate | Escape Dist | Top Drug |",
-        "|--------|------------|-----------|-------------|----------|",
+        "_In-silico comparison across cancer generators. Not a clinical pan-cancer result._",
+        "",
+        "| Cancer | Seriousness | In-silico escape rate | Escape Dist | Top library entry |",
+        "|--------|------------|----------------------|-------------|-------------------|",
     ]
 
     from confluence_runner import compute_seriousness, select_drugs, compute_phase_timing
@@ -190,8 +197,8 @@ def handle_run_all() -> str:
 
     lines.extend([
         "",
-        f"**Total cancers processed:** {len(results)}",
-        f"**Mean cure rate:** {np.mean([r['cure_rate'] for r in results])*100:.1f}%" if results else "",
+        f"**Total generators processed:** {len(results)}",
+        f"**Mean in-silico escape rate:** {np.mean([r['cure_rate'] for r in results])*100:.1f}%" if results else "",
     ])
 
     return "\n".join(lines)
@@ -229,7 +236,9 @@ def handle_get_seriousness(cancer_type: str) -> str:
     )
 
     lines = [
-        f"# Seriousness Breakdown: {cancer_type}",
+        f"# Model seriousness breakdown: {cancer_type}",
+        "",
+        "_Simulation features, not a clinical severity or staging score._",
         "",
         f"| Component | Value | Weight |",
         f"|-----------|-------|--------|",
@@ -273,7 +282,7 @@ def handle_query_drug(drug_name: str) -> str:
             f"## 💊 {inv.name}",
             f"- **Category:** {inv.category}",
             f"- **Mechanism:** {inv.mechanism}",
-            f"- **Evidence Level:** {inv.evidence_level}",
+            f"- **Library evidence tag:** {inv.evidence_level}",
             f"- **Effect Magnitude:** {effect_norm:.4f}",
             f"- **Cancer Tags:** {', '.join(inv.cancer_tags) if inv.cancer_tags else 'General'}",
             "",
@@ -291,9 +300,9 @@ def handle_list_drugs(category: str = None) -> str:
         lib = [inv for inv in lib if inv.category == category]
 
     lines = [
-        f"# SAEM Drug Library ({len(lib)} drugs" + (f" in {category}" if category else "") + ")",
+        f"# SAEM intervention library ({len(lib)} entries" + (f" in {category}" if category else "") + ")",
         "",
-        "| # | Drug | Category | Evidence | Mechanism |",
+        "| # | Library entry | Category | Evidence tag | Mechanism |",
         "|---|------|----------|----------|-----------|",
     ]
 
@@ -305,7 +314,7 @@ def handle_list_drugs(category: str = None) -> str:
 
 
 def handle_analyze_resistance(cancer_type: str) -> str:
-    """Run resistance comparison."""
+    """Compare modeled adaptive vs continuous schedules (in-silico)."""
     _ensure_saem()
     from confluence_runner import (
         select_drugs, compute_seriousness, compute_phase_timing,
@@ -328,22 +337,25 @@ def handle_analyze_resistance(cancer_type: str) -> str:
     superior = adaptive_esc < continuous_esc
 
     lines = [
-        f"# Resistance Analysis: {cancer_type}",
+        f"# Modeled resistance comparison: {cancer_type}",
+        "",
+        "_In-silico schedule comparison. Not a regimen recommendation._",
         "",
         f"| Metric | Adaptive (Phased) | Continuous |",
         f"|--------|-------------------|------------|",
         f"| Escape Distance | {adaptive_esc:.4f} | {continuous_esc:.4f} |",
-        f"| Strategy | 3-phase + holiday | Non-stop dosing |",
+        f"| Strategy | 3-phase + holiday | Continuous schedule |",
         "",
-        f"**Adaptive Superior:** {'✅ Yes' if superior else '❌ No'} "
-        f"({'lower' if superior else 'higher'} escape distance)",
+        f"**Adaptive lower escape in this run:** {'✅ Yes' if superior else '❌ No'} "
+        f"({'lower' if superior else 'higher'} modeled escape distance)",
         "",
-        "**Interpretation:** " + (
-            "The phased approach with drug holidays prevents resistance buildup, "
-            "keeping the cancer closer to the healthy basin."
+        "**Model observation:** " + (
+            "In this run, the phased schedule produced a lower simulated escape "
+            "distance than the continuous schedule. That is a simulator comparison, "
+            "not evidence that adaptive therapy is clinically superior."
             if superior else
-            "Continuous therapy showed lower escape in this case — may indicate "
-            "this cancer requires sustained pressure."
+            "In this run, the continuous schedule produced a lower simulated escape "
+            "distance. That is a simulator comparison, not a dosing recommendation."
         ),
     ]
 
@@ -351,7 +363,7 @@ def handle_analyze_resistance(cancer_type: str) -> str:
 
 
 def handle_get_validation_gates() -> str:
-    """Run all 6 validation gates."""
+    """Run all 6 in-silico computational gates."""
     _ensure_saem()
     from confluence_runner import (
         compute_seriousness, select_drugs, compute_phase_timing,
@@ -428,9 +440,11 @@ def handle_get_validation_gates() -> str:
     total_gates = len(gates)
 
     lines = [
-        "# 🔬 SAEM Validation Gates",
+        "# 🔬 SAEM computational gates (in-silico)",
         "",
-        f"**Result: {passed}/{total_gates} gates passed**",
+        "_These gates are research checks on the simulator. A pass is not clinical validation of a treatment protocol._",
+        "",
+        f"**Result: {passed}/{total_gates} computational gates passed**",
         "",
         "| Gate | Status |",
         "|------|--------|",
@@ -458,7 +472,9 @@ def handle_get_generator(cancer_type: str) -> str:
     meta = metadata.get(cancer_type)
 
     lines = [
-        f"# Generator Matrix: {cancer_type}",
+        f"# Generator matrix: {cancer_type}",
+        "",
+        "_Model parameters only — not a clinical assay._",
         "",
         "```",
     ]
@@ -544,6 +560,14 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
 
             case _:
                 result = f"Unknown tool: {name}"
+
+        if not result.startswith("Unknown tool:"):
+            result = (
+                result
+                + "\n\n---\n"
+                + "_In-silico research output. Not a medical device, CDS, "
+                + "or dosing advice. See DISCLAIMER.md._"
+            )
 
         return [TextContent(type="text", text=result)]
 

@@ -1,4 +1,8 @@
-"""MCP Tool definitions for the SAEM Cancer PoC server."""
+"""MCP Tool definitions for the SAEM Cancer PoC server.
+
+Tool text is research/simulation language only. These tools do not
+validate clinical protocols or support treatment decisions.
+"""
 
 from mcp.types import Tool
 
@@ -6,16 +10,19 @@ TOOLS = [
     Tool(
         name="saem_run_simulation",
         description=(
-            "Run the full SAEM 3-phase Flatten→Heat→Push protocol simulation "
-            "for a specific cancer type. Returns cure rate, escape distance, "
-            "drug protocol, phase timing, and resistance comparison."
+            "Run the in-silico SAEM 3-phase Flatten→Heat→Push schedule "
+            "for a cancer generator. Returns modeled escape distance, "
+            "in-silico basin-escape rate (engine field: cure_rate), "
+            "simulated intervention schedule, phase timing, and a "
+            "resistance comparison. Research simulation only — not a "
+            "clinical protocol or treatment recommendation."
         ),
         inputSchema={
             "type": "object",
             "properties": {
                 "cancer_type": {
                     "type": "string",
-                    "description": "Cancer type to simulate. One of: TNBC, PDAC, NSCLC, GBM, Melanoma, CML, Ovarian, AML, mCRPC, HCC",
+                    "description": "Cancer generator label to simulate. One of: TNBC, PDAC, NSCLC, GBM, Melanoma, CML, Ovarian, AML, mCRPC, HCC",
                     "enum": ["TNBC", "PDAC", "NSCLC", "GBM", "Melanoma", "CML", "Ovarian", "AML", "mCRPC", "HCC"],
                 },
             },
@@ -25,8 +32,10 @@ TOOLS = [
     Tool(
         name="saem_run_all",
         description=(
-            "Run simulation across all 10 cancer types and return a summary "
-            "table with cure rates, seriousness rankings, and protocols."
+            "Run the simulation across all 10 cancer generators and return "
+            "a summary table of in-silico scores (modeled basin-escape rates, "
+            "seriousness rankings, and simulated schedules). Not a "
+            "pan-cancer clinical result."
         ),
         inputSchema={
             "type": "object",
@@ -36,16 +45,18 @@ TOOLS = [
     Tool(
         name="saem_get_seriousness",
         description=(
-            "Get the composite seriousness breakdown for a cancer type. "
-            "Shows coherence deficit, basin curvature, immune suppression, "
-            "stress load, stromal barrier, and composite score."
+            "Get the composite model seriousness breakdown for a cancer "
+            "generator. Shows coherence deficit, basin curvature, immune "
+            "suppression, stress load, stromal barrier, and composite score. "
+            "These are simulation features, not a clinical severity or "
+            "staging score."
         ),
         inputSchema={
             "type": "object",
             "properties": {
                 "cancer_type": {
                     "type": "string",
-                    "description": "Cancer type to analyze.",
+                    "description": "Cancer generator label to analyze.",
                     "enum": ["TNBC", "PDAC", "NSCLC", "GBM", "Melanoma", "CML", "Ovarian", "AML", "mCRPC", "HCC"],
                 },
             },
@@ -55,16 +66,18 @@ TOOLS = [
     Tool(
         name="saem_query_drug",
         description=(
-            "Query details about a specific drug in the SAEM intervention library. "
-            "Returns mechanism of action, target metabolites, evidence level, "
-            "and which cancers it's most effective against."
+            "Query a named entry in the SAEM intervention library. Returns "
+            "mechanism notes, target metabolites, a literature evidence tag, "
+            "and which cancer generators the entry is mapped to. Library "
+            "entries are research annotations, not prescribing information "
+            "and not a claim of clinical efficacy."
         ),
         inputSchema={
             "type": "object",
             "properties": {
                 "drug_name": {
                     "type": "string",
-                    "description": "Name or partial name of the drug to search for.",
+                    "description": "Name or partial name of the library entry to search for.",
                 },
             },
             "required": ["drug_name"],
@@ -73,9 +86,10 @@ TOOLS = [
     Tool(
         name="saem_list_drugs",
         description=(
-            "List all drugs in the SAEM intervention library, optionally "
+            "List entries in the SAEM intervention library, optionally "
             "filtered by category (curvature_reducer, entropic_driver, "
-            "gradient_amplifier, immune_modulator, resistance_breaker)."
+            "gradient_amplifier, immune_modulator, resistance_breaker). "
+            "This is a simulation library listing, not a formulary."
         ),
         inputSchema={
             "type": "object",
@@ -97,15 +111,17 @@ TOOLS = [
     Tool(
         name="saem_analyze_resistance",
         description=(
-            "Compare adaptive (phased) vs continuous therapy for a cancer type. "
-            "Shows escape distances and demonstrates adaptive superiority."
+            "Compare modeled adaptive (phased) vs continuous intervention "
+            "schedules for a cancer generator. Reports in-silico escape "
+            "distances. Does not claim clinical superiority or recommend "
+            "a regimen."
         ),
         inputSchema={
             "type": "object",
             "properties": {
                 "cancer_type": {
                     "type": "string",
-                    "description": "Cancer type to analyze.",
+                    "description": "Cancer generator label to analyze.",
                     "enum": ["TNBC", "PDAC", "NSCLC", "GBM", "Melanoma", "CML", "Ovarian", "AML", "mCRPC", "HCC"],
                 },
             },
@@ -115,9 +131,12 @@ TOOLS = [
     Tool(
         name="saem_get_validation_gates",
         description=(
-            "Run all 6 validation gates and return pass/fail status for each: "
-            "1) Escape distance, 2) Cure rate CI, 3) Drug diversity, "
-            "4) Sensitivity robustness, 5) Adaptive superiority, 6) Coherence restoration."
+            "Run the six in-silico computational gates and return pass/fail "
+            "for each: 1) Escape distance, 2) Simulated basin-escape-rate CI, "
+            "3) Library diversity, 4) Sensitivity robustness, 5) Adaptive-"
+            "schedule comparison, 6) Coherence restoration. These are "
+            "research checks on the simulator, not clinical validation of "
+            "a treatment protocol."
         ),
         inputSchema={
             "type": "object",
@@ -127,15 +146,16 @@ TOOLS = [
     Tool(
         name="saem_get_generator",
         description=(
-            "Get the 10×10 generator matrix for a specific cancer type. "
-            "Returns the matrix values and metadata (confidence, tags, evidence)."
+            "Get the 10×10 generator matrix for a cancer generator. "
+            "Returns the matrix values and metadata (confidence, tags, "
+            "evidence notes). Model parameters only — not a clinical assay."
         ),
         inputSchema={
             "type": "object",
             "properties": {
                 "cancer_type": {
                     "type": "string",
-                    "description": "Cancer type.",
+                    "description": "Cancer generator label.",
                     "enum": ["TNBC", "PDAC", "NSCLC", "GBM", "Melanoma", "CML", "Ovarian", "AML", "mCRPC", "HCC"],
                 },
             },
