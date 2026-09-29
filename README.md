@@ -1,10 +1,12 @@
 # SAEM MCP Server
 
+**Research prototype.** In-silico tools only.
+
 > **Status: in-silico research hypothesis. Not validated in cells, animals or patients.**
 > Not a cure, not a therapy, not a medical device, not clinical decision support.
 > Outputs are model results under stated assumptions and need wet-lab and clinical validation.
 
-MCP server wrapping [Project Confluence](https://github.com/cloudynirvana/project-confluence) research simulations as tools an agent can call.
+MCP server wrapping [Project Confluence](https://github.com/cloudynirvana/project-confluence) **simulations** as tools an agent can call.
 
 This is a research prototype. It does not validate treatment protocols and it is not for clinical use.
 
@@ -13,7 +15,7 @@ This is a research prototype. It does not validate treatment protocols and it is
 
 ## What Is This?
 
-An [MCP (Model Context Protocol)](https://modelcontextprotocol.io) server that exposes Project Confluence SAEM (System Aligned Equilibrium Medicine) **in-silico** tools.
+An [MCP (Model Context Protocol)](https://modelcontextprotocol.io) server that exposes Project Confluence SAEM research-simulation tools.
 
 Run cancer **simulations**, query a research drug-class library, compare simulated resistance patterns, and inspect validation-gate **research checks** through the MCP protocol.
 
@@ -89,8 +91,8 @@ Add to your MCP client configuration:
 
 ## Part of Project Confluence
 
-This MCP server is part of the [Project Confluence](https://github.com/cloudynirvana/project-confluence) ecosystem — a computational framework for modelling disease dynamics using geometric attractor-escape ideas (SAEM). Research only.
+This MCP server is a research prototype in the [Project Confluence](https://github.com/cloudynirvana/project-confluence) ecosystem. Simulated scores are not protocols, doses, or clinical validation.
 
 ## License
 
-MIT License (stated in this README; a LICENSE file can be added in a follow-up if you want the file on disk).
+MIT License. See [LICENSE](LICENSE).
